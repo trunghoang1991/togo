@@ -45,13 +45,15 @@ export class TaskService {
     }
     // task.code =
     //   'TASK-' + user.id + '/' + (Math.random() + 1).toString(36).substring(8);
+    task.updated_time = new Date();
+    task.created_time = new Date();
     return this.taskRepository.save(task);
   }
 
   async totalTaskInDay(context: CreateTaskDTO): Promise<number> {
     let { totalTaskInDay } = await this.taskRepository
       .createQueryBuilder()
-      .select('SUM(id)', 'totalWithdraw')
+      .select('count(id)', 'totalTaskInDay')
       .where('assignee_id = :assignee_id', { assignee_id: context.assignee_id })
       .where('created_time >= :created_time', {
         created_time: moment().format('YYYY-MM-DD 00:00:00'),
@@ -64,13 +66,19 @@ export class TaskService {
   }
 
   async update(id: number, context: CreateTaskDTO): Promise<Task> {
+    const user = await this.userService.findOne({ id: context.assignee_id });
+    if (!user) {
+      throw new BadRequestException({
+        message: 'User not found',
+      });
+    }
     const task = await this.taskRepository.findOne({ where: { id } });
     if (!task) {
       throw new BadRequestException({
         message: 'Task does not exist',
       });
     }
-    Object.assign(task, context);
+    Object.assign(task, context, { updated_time: new Date() });
     return this.taskRepository.save(task);
   }
 

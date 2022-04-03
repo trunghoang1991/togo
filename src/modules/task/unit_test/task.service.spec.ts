@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateTaskDTO } from './../context';
-import { TaskController } from './../task.controller';
 import { TaskService } from './../task.service';
 import { PriorityEnum, StatusEnum } from './../../../common';
 import { Task } from '../task.entity';
@@ -10,6 +9,7 @@ import { Repository } from 'typeorm';
 import { UserService } from './../../user/user.service';
 import { User } from './../../user/user.entity';
 import { BadRequestException } from '@nestjs/common';
+import { set, reset } from 'mockdate';
 
 const createTaskDto: CreateTaskDTO = {
   assignee_id: 1,
@@ -27,8 +27,11 @@ const updateTaskDto: CreateTaskDTO = {
   status: StatusEnum.InProgess,
 };
 
-const created_time = new Date();
-const updated_time = new Date();
+const date = new Date('2020-04-13T18:09:12.451Z');
+set(date); // Any request to Date will return this date
+
+const created_time = date;
+const updated_time = date;
 
 const tasks: Task[] = [
   {
@@ -126,14 +129,11 @@ describe('TaskService', () => {
 
   describe('create()', () => {
     it('should return error user not found', async () => {
-      const repoSpy = jest.spyOn(repository, 'save');
       try {
         await service.create({ ...createTaskDto, assignee_id: 5 });
       } catch (e) {
         expect(e).toBeInstanceOf(BadRequestException);
         expect(e.message).toBe('User not found');
-      } finally {
-        expect(repoSpy).toBeCalledWith({ ...createTaskDto, assignee_id: 5 });
       }
     });
 
@@ -152,6 +152,30 @@ describe('TaskService', () => {
 
     it('should successfully insert a task', () => {
       expect(service.create(createTaskDto)).resolves.toEqual(tasks[0]);
+    });
+  });
+
+  describe('update()', () => {
+    it('should return error user not found', async () => {
+      try {
+        await service.update(1, { ...createTaskDto, assignee_id: 5 });
+      } catch (e) {
+        expect(e).toBeInstanceOf(BadRequestException);
+        expect(e.message).toBe('User not found');
+      }
+    });
+
+    it('should return error task does not exist', async () => {
+      try {
+        await service.update(2, { ...createTaskDto });
+      } catch (e) {
+        expect(e).toBeInstanceOf(BadRequestException);
+        expect(e.message).toBe('Task does not exist');
+      }
+    });
+
+    it('should successfully insert a task', () => {
+      expect(service.update(1, createTaskDto)).resolves.toEqual(tasks[0]);
     });
   });
 

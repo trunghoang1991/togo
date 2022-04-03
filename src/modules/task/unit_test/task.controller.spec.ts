@@ -4,6 +4,7 @@ import { TaskController } from './../task.controller';
 import { TaskService } from './../task.service';
 import { PriorityEnum, StatusEnum } from './../../../common';
 import { Task } from '../task.entity';
+import { BadRequestException } from '@nestjs/common';
 
 const createTaskDto: CreateTaskDTO = {
   assignee_id: 1,
@@ -125,6 +126,15 @@ describe('TaskController', () => {
       });
       expect(taskService.create).toHaveBeenCalledWith(createTaskDto);
     });
+
+    it('should return error User not found', async () => {
+      taskController.create(createTaskDto);
+      try {
+        await taskController.create({...createTaskDto, assignee_id: 2});
+      } catch (e) {
+        expect(e).toBeInstanceOf(BadRequestException);
+      }
+    });
   });
 
   describe('update()', () => {
@@ -141,6 +151,15 @@ describe('TaskController', () => {
         },
       });
       expect(taskService.update).toHaveBeenCalledWith(1, updateTaskDto);
+    });
+
+    it('should return error User not found', async () => {
+      taskController.update(1, createTaskDto);
+      try {
+        await taskController.update(1, {...createTaskDto, assignee_id: 2});
+      } catch (e) {
+        expect(e).toBeInstanceOf(BadRequestException);
+      }
     });
   });
 

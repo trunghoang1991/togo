@@ -42,6 +42,7 @@ export class TaskController {
   }
 
   @Put(':id')
+  @UsePipes(new TaskPipe())
   async update(
     @Param('id') id: number,
     @Body() context: CreateTaskDTO,

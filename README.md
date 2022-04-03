@@ -27,7 +27,9 @@ $ npm run start:prod
 # development
 $ docker-compose up -d
 
-## Test
+# test API
+$ localhost:3000/docs
+
 
 ```bash
 # unit tests
@@ -38,5 +40,4 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
-```
-- 
+
